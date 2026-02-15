@@ -1,18 +1,28 @@
 # AI Pet Sim - Tamagotchi Mechanics Implementation Plan
 
+## TODOs
+
+- [Completed] Add repository Copilot & path-specific instruction files (.github/)
+- [Todo] Add unit tests for `Creature` behavior (stat decay, evolution)
+- [Todo] Add IPC tests for `game:perform-action` and `settings` handlers
+- [Todo] Clean up `LMStudioService.js` (remove duplicated client block)
+- [In Progress] Add CI (install / build / pack)
+
 ## Research Summary
 
 Based on extensive research of Tamagotchi mechanics, virtual pet game design, and modern implementations, I've identified key features that make virtual pets engaging and meaningful.
 
-### Core Tamagotchi Mechanics Discovered:
+### Core Tamagotchi Mechanics Discovered
 
 **1. Care Mistakes System**
+
 - Physical care mistakes: Missed hunger calls, missed scolding, not curing sickness
 - Mental care mistakes: Missed happiness calls, missed praising, leaving lights on
 - 15-minute response window before care mistake is recorded
 - Care mistakes determine evolution paths (better care = better characters)
 
 **2. Stat System**
+
 - Hunger: Increases over time (0.5/min), decreases with feeding
 - Happiness: Can be filled with games, snacks, or care
 - Health: Affected by hunger levels, cleanliness, sickness
@@ -20,12 +30,14 @@ Based on extensive research of Tamagotchi mechanics, virtual pet game design, an
 - Weight: Increases with food, decreases with games
 
 **3. Life Stages & Evolution**
+
 - Egg → Baby → Child → Teen → Adult → Elder
 - Evolution timing based on care quality, not just age
 - Some evolutions require specific care mistake counts
 - Better care = healthier, more desirable adults
 
 **4. Daily Care Activities**
+
 - Feeding (meals and snacks)
 - Cleaning poop (hygiene)
 - Discipline/Training (scolding bad behavior, praising good)
@@ -33,11 +45,13 @@ Based on extensive research of Tamagotchi mechanics, virtual pet game design, an
 - Turning lights off for sleep
 
 **5. Sickness & Health**
+
 - Can get sick from: missed care, too much poop, too many snacks, extreme temperatures
 - Sickness requires medicine to cure
 - Multiple sicknesses can lead to death
 
 **6. Mini-Games**
+
 - Improve happiness and intelligence
 - Provide rewards (food, items)
 - Strengthen bond with pet
@@ -49,7 +63,9 @@ Based on extensive research of Tamagotchi mechanics, virtual pet game design, an
 ### Phase 8: Core Tamagotchi Mechanics Enhancement
 
 #### 8.1 Care Mistakes System
+
 **Purpose**: Create meaningful consequences for neglect that affect evolution
+
 - **8.1.1**: Add `careMistakes` tracking to Creature class
   - Track physical mistakes (hunger, sickness)
   - Track mental mistakes (happiness, praise calls)
