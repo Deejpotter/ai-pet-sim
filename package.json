@@ -1,0 +1,61 @@
+{
+  "name": "ai-pet-sim",
+  "version": "1.0.0",
+  "description": "AI Pet Simulator with local AI models",
+  "main": "src/main/index.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --inspect=5858",
+    "build": "electron-builder",
+    "dist": "electron-builder --publish=never",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux",
+    "pack": "electron-builder --dir",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "build": {
+    "appId": "com.aipetsim.app",
+    "productName": "AI Pet Sim",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/icons",
+      "category": "Game"
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@pixi/sound": "^6.0.1",
+    "axios": "^1.13.5",
+    "pixi.js": "^8.16.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "electron": "^40.4.1",
+    "electron-builder": "^24.13.3",
+    "electron-reload": "^2.0.0-alpha.1",
+    "zod": "^4.3.6"
+  }
+}

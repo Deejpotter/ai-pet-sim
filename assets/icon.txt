@@ -1,0 +1,2 @@
+// Placeholder - in production, add a proper icon file here
+// For now, we'll use Electron's default icon
