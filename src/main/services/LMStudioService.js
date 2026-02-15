@@ -53,19 +53,21 @@ class LMStudioService {
   }
 
 
-
-
-
-
+  async checkConnection() {
+    try {
+      await this.client.get('/v1/models');
+      return { connected: true };
+    } catch (err) {
+      try {
+        await this.client.get('/');
+        return { connected: true };
+      } catch (err2) {
+        return { connected: false, error: err2.message };
+      }
+    }
   }
 
-
-
-  }
-
-
-
-  async generateCreatureFromEgg(eggType) {
+async generateCreatureFromEgg(eggType) {
     const eggThemes = {
       mystic: 'mystic and arcane',
       nature: 'nature and growth',
@@ -162,74 +164,75 @@ class LMStudioService {
       required: ['name', 'type', 'stage', 'appearance', 'personality', 'stats']
     };
 
-    const response = await this.client.post('/v1/chat/completions', {
-      model: 'local-model',
-      messages: [
-        {
-          role: 'system',
-          content: `You are a creative creature generator for a virtual pet game. 
-Generate a unique baby creature that just hatched from a ${eggType} egg. 
-Theme: ${theme}. 
-The creature should visually match the egg theme with appropriate colors and features.
-Be creative and make it interesting and memorable!`
-        },
-        {
-          role: 'user',
-          content: `Create a unique creature from a ${eggType} egg with theme: ${theme}. 
-Generate complete appearance, personality, and starting stats.
-The creature is a newborn baby that just hatched.`
-        }
-      ],
-      temperature: 0.8,
-      max_tokens: 800,
-      response_format: {
-        type: 'json_schema',
-        json_schema: {
-          name: 'creature_response',
-          strict: true,
-          schema: creatureSchema
-        }
-      }
-    });
-
-    const content = response.data.choices[0].message.content;
-    
     try {
+      const resp = await this.client.post('/v1/chat/completions', {
+        model: 'local-model',
+        messages: [
+          { role: 'system', content: `You are a creative creature generator for a virtual pet game.` },
+          { role: 'user', content: `Create a unique baby creature hatched from a ${eggType} egg. Theme: ${theme}. Return JSON that matches schema.` }
+        ],
+        temperature: 0.8,
+        max_tokens: 800,
+        response_format: { type: 'json_schema', json_schema: { name: 'creature_response', strict: true, schema: creatureSchema } }
+      });
+
+      const content = resp?.data?.choices?.[0]?.message?.content;
+      if (!content) throw new Error('Empty AI response');
+
       const creatureData = JSON.parse(content);
-      
-      // Ensure all required fields are present with defaults
-      return {
-        ...creatureData,
-        stage: 'baby', // Enforce baby stage
-        state: {
-          isSick: false,
-          isSleeping: false,
-          isDead: false,
-          lightsOn: true,
-          lastSickAt: null,
-          diedAt: null
-        },
-        stats: {
-          ...creatureData.stats,
-          age: 0,
-          hiddenHungerHearts: 0,
-          hiddenHappinessHearts: 0,
-          snacksEaten: 0,
-          sicknessCount: 0
-        },
-        careMistakes: {
-          physical: [],
-          mental: [],
-          total: 0
-        },
-        attentionCalls: [],
-        poops: [],
-        evolutionHistory: []
-      };
-    } catch (error) {
-      console.error('Failed to parse AI response:', content);
-      throw new Error('AI returned invalid JSON. Please try again.');
+      return this._normalizeCreatureResponse(creatureData);
+    } catch (err) {
+      console.warn('LMStudioService.generateCreatureFromEgg - AI failed, using fallback:', err.message);
+      return this._generateFallbackCreature(eggType);
     }
+  }
+
+  _normalizeCreatureResponse(data) {
+    return {
+      ...data,
+      stage: 'baby',
+      state: { isSick: false, isSleeping: false, isDead: false, lightsOn: true, lastSickAt: null, diedAt: null },
+      stats: { ...data.stats, age: 0, hiddenHungerHearts: 0, hiddenHappinessHearts: 0, snacksEaten: 0, sicknessCount: 0 },
+      careMistakes: { physical: [], mental: [], total: 0 },
+      attentionCalls: [],
+      poops: [],
+      evolutionHistory: []
+    };
+  }
+
+  _generateFallbackCreature(eggType) {
+    const presets = {
+      mystic: { name: 'Misty', baseColor: '#8B5CF6', glowColor: '#A78BFA' },
+      nature: { name: 'Sprout', baseColor: '#22C55E', glowColor: '#86EFAC' },
+      fire: { name: 'Blaze', baseColor: '#EF4444', glowColor: '#FCA5A5' },
+      water: { name: 'Ripple', baseColor: '#3B82F6', glowColor: '#93C5FD' },
+      shadow: { name: 'Umbra', baseColor: '#6B7280', glowColor: '#9CA3AF' },
+      light: { name: 'Glim', baseColor: '#EAB308', glowColor: '#FDE68A' }
+    };
+
+    const p = presets[eggType] || { name: 'Pebble', baseColor: '#8B5CF6', glowColor: '#A78BFA' };
+
+    return {
+      name: `${p.name} (${eggType})`,
+      type: 'creature',
+      stage: 'baby',
+      appearance: {
+        baseColor: p.baseColor,
+        glowColor: p.glowColor,
+        shape: 'blob',
+        radius: 50,
+        tentacles: 0,
+        eyeCount: 2,
+        specialFeatures: []
+      },
+      personality: { traits: ['curious'], mood: 'happy' },
+      stats: { health: 90, energy: 90, happiness: 70, hunger: 40, weight: 20, hygiene: 95, discipline: 0, age: 0, hiddenHungerHearts: 0, hiddenHappinessHearts: 0, snacksEaten: 0, sicknessCount: 0 },
+      state: { isSick: false, isSleeping: false, isDead: false, lightsOn: true, lastSickAt: null, diedAt: null },
+      careMistakes: { physical: [], mental: [], total: 0 },
+      attentionCalls: [],
+      poops: [],
+      evolutionHistory: []
+    };
   }
 
   async generateEvolutionEvent(creature, action) {
