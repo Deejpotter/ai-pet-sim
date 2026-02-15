@@ -47,39 +47,12 @@ class LMStudioService {
     this.maxRetries = 3;
     this.retryDelay = 1000;
     this.fallbackModels = ['mistralai/ministral-7b', 'mistralai/mini-2.7b'];
+
+    // axios client for LM Studio-compatible endpoints
+    this.client = axios.create({ baseURL: this.url, timeout: this.timeout });
   }
 
-   async generateCreatureFromEgg(eggType) {
-     let lastError = null;
-     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
-       try {
-         const response = await axios.post(`${this.url}/generate`, {
-           type: eggType
-         }, {
-           timeout: this.timeout,
-           headers: {
-             'Content-Type': 'application/json',
-           }
-         });
 
-        if (!response.ok) {
-          throw new Error(`Failed to generate creature from egg. Status code: ${response.status}`);
-        }
-
-       const data = await response.data;
-       return this.validateCreatureResponse(data);
-      } catch (error) {
-        lastError = error;
-        console.warn(`Attempt ${attempt} failed for generating creature from egg:`, error.message);
-        
-        if (attempt < this.maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, this.retryDelay));
-        }
-      }
-    }
-
-    throw new Error(`Failed to generate creature after ${this.maxRetries} attempts. Last error: ${lastError.message}`);
-  }
 
 
 
@@ -91,6 +64,17 @@ class LMStudioService {
   }
 
 
+
+  async generateCreatureFromEgg(eggType) {
+    const eggThemes = {
+      mystic: 'mystic and arcane',
+      nature: 'nature and growth',
+      fire: 'fiery and energetic',
+      water: 'oceanic and fluid',
+      shadow: 'shadowy and mysterious',
+      light: 'bright and pure'
+    };
+    const theme = eggThemes[eggType] || String(eggType || 'mysterious');
 
     // Comprehensive JSON schema for creature generation
     // Enforces valid ranges and required fields

@@ -5,7 +5,13 @@
 - [Completed] Add repository Copilot & path-specific instruction files (.github/)
 - [Todo] Add unit tests for `Creature` behavior (stat decay, evolution)
 - [Todo] Add IPC tests for `game:perform-action` and `settings` handlers
-- [Todo] Clean up `LMStudioService.js` (remove duplicated client block)
+- [In Progress] Clean up `LMStudioService.js` — fix crash + add robust AI fallback
+  - [x] Investigate crash and locate syntax error
+  - [x] Design single consistent LM Studio client + schema handling
+  - [x] Implement `generateCreatureFromEgg(eggType)` with JSON-schema response_format
+  - [x] Add `checkConnection()` and safe fallback creature generator
+  - [x] Run checks and smoke-test
+  - [ ] Commit & push fix
 - [In Progress] Add CI (install / build / pack)
 
 ## Research Summary
