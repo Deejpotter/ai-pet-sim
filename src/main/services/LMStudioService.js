@@ -67,7 +67,7 @@ class LMStudioService {
     }
   }
 
-async generateCreatureFromEgg(eggType) {
+  async generateCreatureFromEgg(eggType) {
     const eggThemes = {
       mystic: 'mystic and arcane',
       nature: 'nature and growth',
@@ -83,48 +83,48 @@ async generateCreatureFromEgg(eggType) {
     const creatureSchema = {
       type: 'object',
       properties: {
-        name: { 
-          type: 'string', 
-          description: 'A creative, memorable name matching the theme' 
+        name: {
+          type: 'string',
+          description: 'A creative, memorable name matching the theme'
         },
-        type: { 
-          type: 'string', 
-          enum: ['slime', 'blob', 'creature', 'monster'] 
+        type: {
+          type: 'string',
+          enum: ['slime', 'blob', 'creature', 'monster']
         },
-        stage: { 
+        stage: {
           const: 'baby'  // Force baby stage for new creatures
         },
         appearance: {
           type: 'object',
           properties: {
-            baseColor: { 
-              type: 'string', 
+            baseColor: {
+              type: 'string',
               pattern: '^#[0-9A-Fa-f]{6}$',
               description: 'Main body color in hex'
             },
-            glowColor: { 
-              type: 'string', 
+            glowColor: {
+              type: 'string',
               pattern: '^#[0-9A-Fa-f]{6}$',
               description: 'Glow/aura color in hex'
             },
-            shape: { 
-              type: 'string', 
-              enum: ['circle', 'blob', 'oval'] 
+            shape: {
+              type: 'string',
+              enum: ['circle', 'blob', 'oval']
             },
-            radius: { 
-              type: 'integer', 
-              minimum: 30, 
-              maximum: 80 
+            radius: {
+              type: 'integer',
+              minimum: 30,
+              maximum: 80
             },
-            tentacles: { 
-              type: 'integer', 
-              minimum: 0, 
-              maximum: 8 
+            tentacles: {
+              type: 'integer',
+              minimum: 0,
+              maximum: 8
             },
-            eyeCount: { 
-              type: 'integer', 
-              minimum: 0, 
-              maximum: 4 
+            eyeCount: {
+              type: 'integer',
+              minimum: 0,
+              maximum: 4
             },
             specialFeatures: {
               type: 'array',
@@ -152,7 +152,7 @@ async generateCreatureFromEgg(eggType) {
             energy: { type: 'integer', minimum: 60, maximum: 100 },
             happiness: { type: 'integer', minimum: 50, maximum: 80 },
             hunger: { type: 'integer', minimum: 30, maximum: 60 },
-            
+
             // Expanded Tamagotchi stats
             weight: { type: 'integer', minimum: 15, maximum: 30 },
             hygiene: { type: 'integer', minimum: 80, maximum: 100 },

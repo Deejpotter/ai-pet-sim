@@ -41,7 +41,7 @@ describe('LMStudioService', () => {
       stats: { health: 85, energy: 80, happiness: 70, hunger: 40, weight: 20, hygiene: 95, discipline: 0 }
     };
 
-    const fakeResp = { data: { choices: [ { message: { content: JSON.stringify(aiCreature) } } ] } };
+    const fakeResp = { data: { choices: [{ message: { content: JSON.stringify(aiCreature) } }] } };
     svc.client = { post: jest.fn().mockResolvedValue(fakeResp) };
 
     const creature = await svc.generateCreatureFromEgg('mystic');

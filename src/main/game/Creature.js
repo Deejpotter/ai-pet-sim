@@ -83,7 +83,7 @@ class Creature {
     this.stage = data.stage || 'baby';
     this.createdAt = data.createdAt || Date.now();
     this.lastInteracted = data.lastInteracted || Date.now();
-    
+
     // Core stats (original 5 + new expanded stats)
     this.stats = {
       health: data.stats?.health ?? 100,
@@ -91,27 +91,27 @@ class Creature {
       happiness: data.stats?.happiness ?? 50,
       hunger: data.stats?.hunger ?? 50,
       age: data.stats?.age ?? 0,
-      
+
       // NEW: Weight system (Tamagotchi-inspired)
       weight: data.stats?.weight ?? 20, // Starting weight in grams
-      
+
       // NEW: Hygiene/cleanliness (0-100, decreases with poop)
       hygiene: data.stats?.hygiene ?? 100,
-      
+
       // NEW: Discipline/training meter (0-10 hearts)
       discipline: data.stats?.discipline ?? 0,
-      
+
       // NEW: Hidden hearts system (can eat 2 meals beyond meter)
       hiddenHungerHearts: data.stats?.hiddenHungerHearts ?? 0,
       hiddenHappinessHearts: data.stats?.hiddenHappinessHearts ?? 0,
-      
+
       // NEW: Snack tracking (15+ snacks = cavity/sickness)
       snacksEaten: data.stats?.snacksEaten ?? 0,
-      
+
       // NEW: Sickness counter (multiple sicknesses = death)
       sicknessCount: data.stats?.sicknessCount ?? 0
     };
-    
+
     // State flags
     this.state = {
       isSick: data.state?.isSick ?? false,
@@ -121,20 +121,20 @@ class Creature {
       lastSickAt: data.state?.lastSickAt ?? null,
       diedAt: data.state?.diedAt ?? null
     };
-    
+
     // Care mistakes tracking (determines evolution outcomes)
     this.careMistakes = {
       physical: data.careMistakes?.physical ?? [], // Array of { type, timestamp }
       mental: data.careMistakes?.mental ?? [],
       total: data.careMistakes?.total ?? 0
     };
-    
+
     // Active attention calls (waiting for player response)
     this.attentionCalls = data.attentionCalls || [];
-    
+
     // Poop on screen (max 4 before sickness)
     this.poops = data.poops || [];
-    
+
     // Appearance configuration
     this.appearance = data.appearance || {
       baseColor: '#8B5CF6',
@@ -145,14 +145,14 @@ class Creature {
       eyeCount: 2,
       specialFeatures: []
     };
-    
+
     this.personality = data.personality || {
       traits: ['friendly'],
       mood: 'neutral'
     };
-    
+
     this.evolutionHistory = data.evolutionHistory || [];
-    
+
     // Sleep schedule (configurable, default 9PM-8AM)
     this.sleepSchedule = data.sleepSchedule || {
       sleepHour: 21, // 9 PM
@@ -161,8 +161,8 @@ class Creature {
   }
 
   generateId() {
-    return Math.random().toString(36).substring(2, 15) + 
-           Math.random().toString(36).substring(2, 15);
+    return Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15);
   }
 
   /**
@@ -178,7 +178,7 @@ class Creature {
 
     // Check sleep schedule and update sleep state
     this.updateSleepState();
-    
+
     // Don't decay stats while sleeping
     if (this.state.isSleeping) {
       // Recover energy while sleeping
@@ -190,13 +190,13 @@ class Creature {
     // Tamagotchi-inspired stat decay rates
     // Hunger increases fastest (0.5/min) - requires frequent feeding
     this.stats.hunger = Math.min(100, this.stats.hunger + (deltaMinutes * 0.5));
-    
+
     // Happiness slowly decreases (0.2/min)
     this.stats.happiness = Math.max(0, this.stats.happiness - (deltaMinutes * 0.2));
-    
+
     // Energy decreases (0.3/min)
     this.stats.energy = Math.max(0, this.stats.energy - (deltaMinutes * 0.3));
-    
+
     // Hygiene slowly decreases (0.1/min)
     this.stats.hygiene = Math.max(0, this.stats.hygiene - (deltaMinutes * 0.1));
 
@@ -235,13 +235,13 @@ class Creature {
   updateSleepState() {
     const now = new Date();
     const currentHour = now.getHours();
-    const shouldBeAsleep = currentHour >= this.sleepSchedule.sleepHour || 
-                           currentHour < this.sleepSchedule.wakeHour;
-    
+    const shouldBeAsleep = currentHour >= this.sleepSchedule.sleepHour ||
+      currentHour < this.sleepSchedule.wakeHour;
+
     if (shouldBeAsleep && !this.state.isSleeping) {
       // Pet should go to sleep
       this.state.isSleeping = true;
-      
+
       // Care mistake if lights are left on
       if (this.state.lightsOn) {
         this.recordCareMistake('mental', 'lights_on');
@@ -250,7 +250,7 @@ class Creature {
       // Pet should wake up
       this.state.isSleeping = false;
       this.state.lightsOn = true; // Auto-turn on lights
-      
+
       // Trigger attention call when waking
       this.triggerAttentionCall('wake');
     }
@@ -262,15 +262,15 @@ class Creature {
    */
   toggleLights() {
     this.state.lightsOn = !this.state.lightsOn;
-    
+
     // If turning off lights while pet should be asleep, good care
     if (!this.state.lightsOn && this.state.isSleeping) {
       // Good - lights off during sleep
       return { success: true, message: 'Lights turned off. Sweet dreams!' };
     }
-    
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       lightsOn: this.state.lightsOn,
       message: this.state.lightsOn ? 'Lights on' : 'Lights off'
     };
@@ -281,67 +281,63 @@ class Creature {
    * Meals reduce hunger by 20, increase weight by 5g
    * Hidden hearts allow eating 2 meals beyond meter
    */
-   async feed(amount = 20) {
-     if (this.state.isSick) {
-       return { success: false, message: `${this.name} is too sick to eat.` };
-     }
+  async feed(amount = 20) {
+    if (this.state.isSick) {
+      return { success: false, message: `${this.name} is too sick to eat.` };
+    }
 
-     if (this.state.isSleeping) {
-       return { success: false, message: `${this.name} is sleeping.` };
-     }
+    if (this.state.isSleeping) {
+      return { success: false, message: `${this.name} is sleeping.` };
+    }
 
-     // Check for hidden hearts before feeding
-     const canUseHiddenHearts = this.stats.hiddenHungerHearts > 0 && this.stats.hunger >= amount;
+    // Check for hidden hearts before feeding
+    const canUseHiddenHearts = this.stats.hiddenHungerHearts > 0 && this.stats.hunger >= amount;
 
-     if (canUseHiddenHearts) {
-       this.stats.hiddenHungerHearts--;
-       return { success: true, message: `${this.name} ate using a hidden heart!`, warning: 'Hidden hearts left: ' + this.stats.hiddenHungerHearts };
-     }
+    if (canUseHiddenHearts) {
+      this.stats.hiddenHungerHearts--;
+      return { success: true, message: `${this.name} ate using a hidden heart!`, warning: 'Hidden hearts left: ' + this.stats.hiddenHungerHearts };
+    }
 
-     // Check if at max hunger (with hidden hearts)
-     const maxHunger = 100 + (this.stats.hiddenHungerHearts * 10);
-     if (this.stats.hunger <= 0) {
-       return {
-         success: false,
-         message: `${this.name} is full!`,
-         disciplineOpportunity: 'refuse_food',
-         tip: 'Try playing with them first to increase happiness!' 
-       };
-     }
+    // Check if at max hunger (with hidden hearts)
+    const maxHunger = 100 + (this.stats.hiddenHungerHearts * 10);
+    if (this.stats.hunger <= 0) {
+      return {
+        success: false,
+        message: `${this.name} is full!`,
+        disciplineOpportunity: 'refuse_food',
+        tip: 'Try playing with them first to increase happiness!'
+      };
+    }
 
-     // Reduce hunger
-     const oldHunger = this.stats.hunger;
-     this.stats.hunger = Math.max(0, this.stats.hunger - amount);
-    
-     // Increase weight (+5g per meal)
-     this.stats.weight += 5;
+    // Reduce hunger
+    const oldHunger = this.stats.hunger;
+    this.stats.hunger = Math.max(0, this.stats.hunger - amount);
 
-     // Recover some health and energy
-     const healthGain = Math.min(30, this.stats.hunger * 1);
-     const energyGain = Math.min(20, this.stats.hunger * 0.4);
-     
-     this.stats.health = Math.min(100, this.stats.health + healthGain);
-     this.stats.energy = Math.min(100, this.stats.energy + energyGain);
-    
-     // Random chance to poop after feeding (50%)
-     if (Math.random() < 0.5) {
-       this.addPoop();
-     }
+    // Increase weight (+5g per meal)
+    this.stats.weight += 5;
 
-     const hungerChange = oldHunger - this.stats.hunger;
-     const weightChange = 5;
-     
-     // Adjust health and energy based on hunger recovery rate
-     const healthGain = Math.min(30, hungerChange * 1);
-     const energyGain = Math.min(20, hungerChange * 0.4);
-     
-     this.lastInteracted = Date.now();
+    // Random chance to poop after feeding (50%)
+    if (Math.random() < 0.5) {
+      this.addPoop();
+    }
 
-     return {
-       message: `${this.name} ate happily!`,
-       statChanges: { hunger: hungerChange, weight: weightChange, health: healthGain, energy: energyGain },
-       success: true
-     };
+    const hungerChange = oldHunger - this.stats.hunger;
+    const weightChange = 5;
+
+    // Adjust health and energy based on hunger recovery rate (apply then report)
+    const healthGain = Math.min(30, hungerChange * 1);
+    const energyGain = Math.min(20, hungerChange * 0.4);
+
+    this.stats.health = Math.min(100, this.stats.health + healthGain);
+    this.stats.energy = Math.min(100, this.stats.energy + energyGain);
+
+    this.lastInteracted = Date.now();
+
+    return {
+      message: `${this.name} ate happily!`,
+      statChanges: { hunger: hungerChange, weight: weightChange, health: healthGain, energy: energyGain },
+      success: true
+    };
   }
 
   /**
@@ -359,16 +355,16 @@ class Creature {
     }
 
     this.stats.snacksEaten++;
-    
+
     // Snacks increase happiness (+15)
     this.stats.happiness = Math.min(100, this.stats.happiness + 15);
-    
+
     // But also increase hunger slightly (+5)
     this.stats.hunger = Math.min(100, this.stats.hunger + 5);
-    
+
     // And weight (+2g)
     this.stats.weight += 2;
-    
+
     // 15+ snacks = sickness (cavity)
     if (this.stats.snacksEaten >= 15) {
       this.makeSick('too_many_snacks');
@@ -379,9 +375,9 @@ class Creature {
         becameSick: true
       };
     }
-    
+
     this.lastInteracted = Date.now();
-    
+
     return {
       message: `${this.name} enjoyed the snack!`,
       statChanges: { happiness: 15, hunger: 5, weight: 2 },
@@ -404,7 +400,7 @@ class Creature {
 
     const energyCost = 15;
     const happinessGain = 20;
-    
+
     if (this.stats.energy < energyCost) {
       return {
         success: false,
@@ -412,16 +408,16 @@ class Creature {
         disciplineOpportunity: 'refuse_play'
       };
     }
-    
+
     this.stats.energy -= energyCost;
     this.stats.happiness = Math.min(100, this.stats.happiness + happinessGain);
     this.stats.hunger = Math.min(100, this.stats.hunger + 8);
-    
+
     // Playing decreases weight (-3g)
     this.stats.weight = Math.max(5, this.stats.weight - 3);
-    
+
     this.lastInteracted = Date.now();
-    
+
     return {
       message: `You played with ${this.name}! They look happier.`,
       statChanges: { energy: -energyCost, happiness: happinessGain, hunger: 8, weight: -3 },
@@ -440,11 +436,11 @@ class Creature {
 
     const energyGain = 50;
     const hungerIncrease = 10;
-    
+
     this.stats.energy = Math.min(100, this.stats.energy + energyGain);
     this.stats.hunger = Math.min(100, this.stats.hunger + hungerIncrease);
     this.lastInteracted = Date.now();
-    
+
     return {
       message: `${this.name} is sleeping peacefully.`,
       statChanges: { energy: energyGain, hunger: hungerIncrease }
@@ -457,8 +453,8 @@ class Creature {
    */
   giveMedicine() {
     if (!this.state.isSick) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         message: `${this.name} isn't sick.`,
         disciplineOpportunity: 'unnecessary_medicine'
       };
@@ -467,9 +463,9 @@ class Creature {
     this.state.isSick = false;
     this.state.lastSickAt = null;
     this.stats.health = Math.min(100, this.stats.health + 30);
-    
+
     this.lastInteracted = Date.now();
-    
+
     return {
       message: `${this.name} feels better!`,
       statChanges: { health: 30 },
@@ -483,8 +479,8 @@ class Creature {
    */
   cleanPoop(poopIndex = null) {
     if (this.poops.length === 0) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         message: 'Nothing to clean.',
         disciplineOpportunity: 'unnecessary_cleaning'
       };
@@ -496,12 +492,12 @@ class Creature {
       // Clean all poop
       this.poops = [];
     }
-    
+
     // Restore hygiene
     this.stats.hygiene = Math.min(100, this.stats.hygiene + (20 * this.poops.length));
-    
+
     this.lastInteracted = Date.now();
-    
+
     return {
       message: 'All clean!',
       statChanges: { hygiene: 20 },
@@ -519,14 +515,14 @@ class Creature {
       this.makeSick('too_much_poop');
       return;
     }
-    
+
     this.poops.push({
       id: this.generateId(),
       createdAt: Date.now(),
       x: 50 + Math.random() * 500, // Random position on canvas
       y: 400 + Math.random() * 50
     });
-    
+
     // Poop reduces hygiene
     this.stats.hygiene = Math.max(0, this.stats.hygiene - 25);
   }
@@ -537,10 +533,10 @@ class Creature {
    */
   praise() {
     const activeCall = this.getActiveAttentionCall();
-    
+
     if (!activeCall) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         message: `${this.name} isn't looking for attention right now.`,
         disciplineOpportunity: 'unnecessary_praise'
       };
@@ -552,7 +548,7 @@ class Creature {
       this.stats.discipline = Math.min(10, this.stats.discipline + 1);
       this.stats.happiness = Math.min(100, this.stats.happiness + 5);
       this.resolveAttentionCall(activeCall.id, true);
-      
+
       return {
         message: `${this.name} looks happy! Good job praising them.`,
         statChanges: { discipline: 1, happiness: 5 },
@@ -562,7 +558,7 @@ class Creature {
       // Bad - should have scolded instead
       this.recordCareMistake('mental', 'wrong_discipline');
       this.resolveAttentionCall(activeCall.id, false);
-      
+
       return {
         message: `${this.name} looks confused...`,
         statChanges: {},
@@ -577,10 +573,10 @@ class Creature {
    */
   scold() {
     const activeCall = this.getActiveAttentionCall();
-    
+
     if (!activeCall) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         message: `${this.name} isn't doing anything wrong right now.`,
         disciplineOpportunity: 'unnecessary_scold'
       };
@@ -591,7 +587,7 @@ class Creature {
       // Good - scolding was appropriate
       this.stats.discipline = Math.min(10, this.stats.discipline + 1);
       this.resolveAttentionCall(activeCall.id, true);
-      
+
       return {
         message: `${this.name} understood!`,
         statChanges: { discipline: 1 },
@@ -602,7 +598,7 @@ class Creature {
       this.recordCareMistake('mental', 'wrong_discipline');
       this.stats.happiness = Math.max(0, this.stats.happiness - 10);
       this.resolveAttentionCall(activeCall.id, false);
-      
+
       return {
         message: `${this.name} looks sad...`,
         statChanges: { happiness: -10 },
@@ -633,7 +629,7 @@ class Creature {
       triggeredAt: Date.now(),
       expiresAt: Date.now() + (15 * 60 * 1000) // 15 minutes
     };
-    
+
     this.attentionCalls.push(call);
   }
 
@@ -651,7 +647,7 @@ class Creature {
   checkExpiredAttentionCalls() {
     const now = Date.now();
     const expired = this.attentionCalls.filter(call => call.expiresAt <= now);
-    
+
     expired.forEach(call => {
       // Record care mistake for each expired call
       if (call.type === 'good_behavior' || call.type === 'wake') {
@@ -660,7 +656,7 @@ class Creature {
         this.recordCareMistake('mental', 'missed_scold');
       }
     });
-    
+
     // Remove expired calls
     this.attentionCalls = this.attentionCalls.filter(call => call.expiresAt > now);
   }
@@ -682,7 +678,7 @@ class Creature {
       timestamp: Date.now(),
       stage: this.stage
     };
-    
+
     this.careMistakes[category].push(mistake);
     this.careMistakes.total++;
   }
@@ -695,7 +691,7 @@ class Creature {
     const physicalMistakes = this.careMistakes.physical.length;
     const mentalMistakes = this.careMistakes.mental.length;
     const total = physicalMistakes + mentalMistakes;
-    
+
     if (total <= 1) return 'serious';
     if (total === 2) return 'normal';
     if (mentalMistakes >= 2 && physicalMistakes < 2) return 'naughty';
@@ -735,10 +731,10 @@ class Creature {
     this.state.isSick = true;
     this.state.lastSickAt = Date.now();
     this.stats.sicknessCount++;
-    
+
     // Record physical care mistake
     this.recordCareMistake('physical', reason);
-    
+
     // Too many sicknesses = death
     if (this.stats.sicknessCount >= 4) {
       this.die('sickness');
@@ -762,37 +758,37 @@ class Creature {
 
     const stages = ['egg', 'baby', 'child', 'teen', 'adult', 'elder'];
     const currentIndex = stages.indexOf(this.stage);
-    
+
     if (currentIndex >= stages.length - 1) return null;
-    
+
     const nextStage = stages[currentIndex + 1];
-    
+
     // Evolution requirements based on care quality tier
     const tier = this.getCareQualityTier();
     const requirements = {
       egg: { minAge: 0, minHappiness: 0 },
-      baby: { 
+      baby: {
         serious: { minAge: 0.1, minHappiness: 30, minDiscipline: 2 },
         normal: { minAge: 0.1, minHappiness: 30, minDiscipline: 1 },
         naughty: { minAge: 0.1, minHappiness: 20, minDiscipline: 0 },
         frail: { minAge: 0.1, minHappiness: 20, minDiscipline: 0 },
         stubborn: { minAge: 0.1, minHappiness: 10, minDiscipline: 0 }
       },
-      child: { 
+      child: {
         serious: { minAge: 1, minHappiness: 50, minDiscipline: 4 },
         normal: { minAge: 1, minHappiness: 50, minDiscipline: 2 },
         naughty: { minAge: 1, minHappiness: 40, minDiscipline: 1 },
         frail: { minAge: 1, minHappiness: 40, minDiscipline: 1 },
         stubborn: { minAge: 1, minHappiness: 30, minDiscipline: 0 }
       },
-      teen: { 
+      teen: {
         serious: { minAge: 3, minHappiness: 60, minDiscipline: 6 },
         normal: { minAge: 3, minHappiness: 60, minDiscipline: 4 },
         naughty: { minAge: 3, minHappiness: 50, minDiscipline: 2 },
         frail: { minAge: 3, minHappiness: 50, minDiscipline: 2 },
         stubborn: { minAge: 3, minHappiness: 40, minDiscipline: 0 }
       },
-      adult: { 
+      adult: {
         serious: { minAge: 7, minHappiness: 70, minDiscipline: 8 },
         normal: { minAge: 7, minHappiness: 70, minDiscipline: 6 },
         naughty: { minAge: 7, minHappiness: 60, minDiscipline: 4 },
@@ -800,15 +796,15 @@ class Creature {
         stubborn: { minAge: 7, minHappiness: 50, minDiscipline: 0 }
       }
     };
-    
+
     const req = requirements[nextStage][tier];
-    
-    if (this.stats.age >= req.minAge && 
-        this.stats.happiness >= req.minHappiness &&
-        this.stats.discipline >= req.minDiscipline) {
+
+    if (this.stats.age >= req.minAge &&
+      this.stats.happiness >= req.minHappiness &&
+      this.stats.discipline >= req.minDiscipline) {
       return { stage: nextStage, tier: tier };
     }
-    
+
     return null;
   }
 
@@ -819,17 +815,17 @@ class Creature {
     const { stage: newStage, tier } = evolution;
     const oldStage = this.stage;
     this.stage = newStage;
-    
+
     this.evolutionHistory.push({
       from: oldStage,
       to: newStage,
       tier: tier,
       timestamp: Date.now()
     });
-    
+
     // Reset care mistakes for next stage (optional - vintage Tamagotchis carried them over)
     // this.careMistakes = { physical: [], mental: [], total: 0 };
-    
+
     return {
       message: `${this.name} evolved into a ${tier} ${newStage}!`,
       newStage: newStage,
