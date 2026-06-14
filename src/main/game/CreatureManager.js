@@ -52,11 +52,15 @@ class CreatureManager {
 
   startAutoSave() {
     if (this.autoSaveInterval) return;
-    
+
     // Auto-save every 5 minutes
     this.autoSaveInterval = setInterval(async () => {
       if (this.currentCreature) {
-        await this.saveCreature(this.currentCreature);
+        try {
+          await this.saveCreature(this.currentCreature);
+        } catch (error) {
+          // Non-critical: suppress to prevent unhandled rejection dialog
+        }
       }
     }, 5 * 60 * 1000);
   }

@@ -44,6 +44,10 @@
  *    user experience (don't kill pet when closing window).
  */
 
+// Suppress EPIPE errors when stdout/stderr has no terminal attached (common on Windows)
+process.stdout.on('error', (err) => { if (err.code !== 'EPIPE') throw err; });
+process.stderr.on('error', (err) => { if (err.code !== 'EPIPE') throw err; });
+
 const { app, BrowserWindow, Tray, Menu, ipcMain, Notification } = require('electron');
 const path = require('path');
 const LMStudioService = require('./services/LMStudioService');
@@ -104,7 +108,7 @@ class MainProcess {
     try {
       const iconPath = path.join(__dirname, '../../assets/icon.png');
       this.tray = new Tray(iconPath);
-      
+
       const contextMenu = Menu.buildFromTemplate([
         {
           label: 'Show App',
@@ -125,7 +129,7 @@ class MainProcess {
 
       this.tray.setToolTip('AI Pet Sim');
       this.tray.setContextMenu(contextMenu);
-      
+
       this.tray.on('click', () => {
         if (this.mainWindow) {
           this.mainWindow.isVisible() ? this.mainWindow.hide() : this.mainWindow.show();
@@ -137,45 +141,45 @@ class MainProcess {
     }
   }
 
-   setupIPC() {
-     // AI OPERATIONS
-     // ============= 
+  setupIPC() {
+    // AI OPERATIONS
+    // ============= 
 
-     /**
-      * Generate creature from egg type using LM Studio AI
-      */
-     ipcMain.handle('ai:generate-from-egg', async (event, eggType) => {
-       try {
-         return await this.lmStudio.generateCreatureFromEgg(eggType);
-       } catch (error) {
-         console.error('Failed to generate creature from egg:', error.message);
-         
-         // Provide user-friendly error message
-         const errorMessage = error.message.includes('LM Studio') ? 
-           'Could not connect to AI service. Please check LM Studio is running.' :
-           'Error generating your pet. Try again later.';
-         
-         throw new Error(errorMessage);
-       }
-     });
+    /**
+     * Generate creature from egg type using LM Studio AI
+     */
+    ipcMain.handle('ai:generate-from-egg', async (event, eggType) => {
+      try {
+        return await this.lmStudio.generateCreatureFromEgg(eggType);
+      } catch (error) {
+        console.error('Failed to generate creature from egg:', error.message);
 
-     /**
-      * Check LM Studio connection status
-      */
-     ipcMain.handle('ai:check-connection', async () => {
-       try {
-         return await this.lmStudio.checkConnection();
-       } catch (error) {
-         console.error('Failed to check LM Studio connection:', error.message);
-         
-         // Provide user-friendly error message
-         throw new Error('Could not connect to AI service. Please ensure LM Studio is running.');
-       }
-     });
+        // Provide user-friendly error message
+        const errorMessage = error.message.includes('LM Studio') ?
+          'Could not connect to AI service. Please check LM Studio is running.' :
+          'Error generating your pet. Try again later.';
+
+        throw new Error(errorMessage);
+      }
+    });
+
+    /**
+     * Check LM Studio connection status
+     */
+    ipcMain.handle('ai:check-connection', async () => {
+      try {
+        return await this.lmStudio.checkConnection();
+      } catch (error) {
+        console.error('Failed to check LM Studio connection:', error.message);
+
+        // Provide user-friendly error message
+        throw new Error('Could not connect to AI service. Please ensure LM Studio is running.');
+      }
+    });
 
     // GAME OPERATIONS
     // ===============
-    
+
     /**
      * Save creature data to storage
      */
@@ -213,7 +217,7 @@ class MainProcess {
           case 'feed':
             result = creature.feed(params?.amount || 20);
             break;
-          
+
           case 'snack':
             result = creature.giveSnack();
             break;
@@ -252,7 +256,7 @@ class MainProcess {
 
         // Save creature after action
         await this.creatureManager.saveCreature(creature);
-        
+
         // Return updated creature with action result
         return {
           ...creature.toJSON(),
@@ -266,7 +270,7 @@ class MainProcess {
 
     // MINI-GAMES
     // ==========
-    
+
     /**
      * Play a mini-game and return results
      * Games: 'guess-direction', 'high-low'
@@ -282,7 +286,7 @@ class MainProcess {
           case 'guess-direction':
             gameResult = this.playGuessDirectionGame(creature, playerInput);
             break;
-          
+
           case 'high-low':
             gameResult = this.playHighLowGame(creature, playerInput);
             break;
@@ -297,7 +301,7 @@ class MainProcess {
           creature.stats.weight = Math.max(5, creature.stats.weight + gameResult.weightChange);
           creature.stats.hunger = Math.min(100, creature.stats.hunger + 5);
           creature.lastInteracted = Date.now();
-          
+
           await this.creatureManager.saveCreature(creature);
         }
 
@@ -313,7 +317,7 @@ class MainProcess {
 
     // SETTINGS
     // ========
-    
+
     ipcMain.handle('settings:get', async () => {
       return await this.storage.read('settings') || {};
     });
@@ -332,14 +336,14 @@ class MainProcess {
     // Pet randomly chooses left or right
     const directions = ['left', 'right'];
     const petChoice = directions[Math.floor(Math.random() * directions.length)];
-    
+
     const success = playerGuess === petChoice;
-    
+
     return {
       success: success,
       petChoice: petChoice,
-      message: success ? 
-        `Correct! ${creature.name} jumped ${petChoice}!` : 
+      message: success ?
+        `Correct! ${creature.name} jumped ${petChoice}!` :
         `Wrong! ${creature.name} jumped ${petChoice}!`,
       happinessGain: success ? 15 : 5,
       weightChange: -3, // Playing decreases weight
@@ -354,18 +358,18 @@ class MainProcess {
     // Generate random numbers 1-10
     const currentNumber = Math.floor(Math.random() * 10) + 1;
     const nextNumber = Math.floor(Math.random() * 10) + 1;
-    
+
     // Determine actual result
     const actualResult = nextNumber > currentNumber ? 'high' : 'low';
-    
+
     const success = playerGuess === actualResult;
-    
+
     return {
       success: success,
       currentNumber: currentNumber,
       nextNumber: nextNumber,
-      message: success ? 
-        `Correct! ${currentNumber} → ${nextNumber} is ${actualResult}!` : 
+      message: success ?
+        `Correct! ${currentNumber} → ${nextNumber} is ${actualResult}!` :
         `Wrong! ${currentNumber} → ${nextNumber} is ${actualResult}!`,
       happinessGain: success ? 20 : 5,
       weightChange: -3,
